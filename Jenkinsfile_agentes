@@ -1,0 +1,12 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('Get Code') {
+            steps {
+                echo "Descargando código"
+                checkout scm
+            }
+        }
+    }
+}
