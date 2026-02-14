@@ -5,3 +5,6 @@ tests
 pyenvunittests
 .coverage
 coverage.xml
+aws/
+awscliv2.zip
+jenkins_2.479.3_all.deb
