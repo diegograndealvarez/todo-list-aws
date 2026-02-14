@@ -4,9 +4,19 @@ pipeline {
     stages {
         stage('Get Code') {
             steps {
-                echo "Descargando código"
+                echo "Descàrrega del codi"
                 checkout scm
+            }
+        }
+
+        stage('Static Test') {
+            steps {
+                echo "Execució de Flake8 i Bandit"
+                sh 'pip3 install flake8 bandit'
+                sh 'flake8 src --output-file=flake8-report.txt || true'
+                sh 'bandit -r src -f txt -o bandit-report.txt || true'
             }
         }
     }
 }
+
