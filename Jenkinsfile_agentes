@@ -29,11 +29,26 @@ pipeline {
 
         stage('Rest Test') {
             steps {
-                echo "Execució de proves d'integració amb Pytest"
+                script {
+                    env.BASE_URL = sh(
+                        script: '''
+                            aws cloudformation describe-stacks \
+                            --stack-name staging-todo-list-aws \
+                            --query 'Stacks[0].Outputs[?OutputKey==`BaseUrlApi`].OutputValue' \
+                            --region us-east-1 \
+                            --output text
+                        ''',
+                        returnStdout: true
+                    ).trim()
+                }
+
+                echo "Base URL: ${env.BASE_URL}"
+
                 sh 'pip3 install pytest --break-system-packages'
                 sh 'python3 -m pytest test/integration/todoApiTest.py'
             }
         }
+
 
 
 
