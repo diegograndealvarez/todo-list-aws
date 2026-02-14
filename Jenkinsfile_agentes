@@ -21,13 +21,8 @@ pipeline {
             steps {
                 echo "Build i desplegament a STAGING"
                 sh 'sam build'
-                sh '''
-                sam deploy \
-                  --no-confirm-changeset \
-                  --no-fail-on-empty-changeset \
-                  --stack-name todo-list-staging \
-                  --capabilities CAPABILITY_IAM
-                '''
+                sh 'sam deploy --config-env staging'
+
             }
         }
 
