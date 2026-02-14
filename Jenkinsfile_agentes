@@ -49,6 +49,21 @@ pipeline {
             }
         }
 
+        stage('Promote') {
+            steps {
+                echo "Promoció de develop a master"
+
+                sh '''
+                    git config --global user.email "jenkins@ci.local"
+                    git config --global user.name "Jenkins CI"
+
+                    git checkout master
+                    git merge develop
+                    git push origin master
+                '''
+            }
+        }
+
 
 
 
