@@ -13,8 +13,8 @@ pipeline {
             steps {
                 echo "Execució de Flake8 i Bandit"
                 sh 'pip3 install flake8 bandit --break-system-packages'
-                sh 'flake8 src --output-file=flake8-report.txt || true'
-                sh 'bandit -r src -f txt -o bandit-report.txt || true'
+                sh 'python3 -m flake8 src --output-file=flake8-report.txt || true'
+                sh 'python3 -m bandit -r src -f txt -o bandit-report.txt || true'
             }
         }
     }
