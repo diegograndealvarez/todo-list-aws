@@ -17,6 +17,7 @@ pipeline {
                 sh 'python3 -m bandit -r src -f txt -o bandit-report.txt || true'
             }
         }
+
         stage('Build & Deploy Staging') {
             steps {
                 echo "Build i desplegament a STAGING"
@@ -30,7 +31,7 @@ pipeline {
             steps {
                 echo "Execució de proves d'integració amb Pytest"
                 sh 'pip3 install pytest --break-system-packages'
-                sh 'python3 -m pytest test/integration/'
+                sh 'python3 -m pytest test/integration/todoApiTest.py'
             }
         }
 
