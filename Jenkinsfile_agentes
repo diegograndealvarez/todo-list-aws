@@ -53,20 +53,24 @@ pipeline {
             steps {
                 echo "Promoció de develop a master"
 
-                sh '''
-                    git config --global user.email "jenkins@ci.local"
-                    git config --global user.name "Jenkins CI"
+                withCredentials([usernamePassword(credentialsId: 'github-credentials', usernameVariable: 'GIT_USER', passwordVariable: 'GIT_PASS')]) {
+                    sh '''
+                        git config --global user.email "jenkins@ci.local"
+                        git config --global user.name "Jenkins CI"
 
-                    git fetch origin
+                        git fetch origin
 
-                    git checkout master
-                    git reset --hard origin/master
+                        git checkout master
+                        git reset --hard origin/master
 
-                    git merge origin/develop
-                    git push origin master
-                '''
+                        git merge origin/develop
+
+                        git push https://${GIT_USER}:${GIT_PASS}@github.com/diegograndealvarez/todo-list-aws.git master
+                    '''
+                }
             }
         }
+
 
 
 
