@@ -86,7 +86,17 @@ stage('Rest Test') {
         echo "Base URL: ${env.BASE_URL}"
 
         sh 'pip3 install pytest --break-system-packages'
-        sh 'python3 -m pytest test/integration/todoApiTest.py'
+        
+            script {
+                if (env.BRANCH_NAME == 'master') {
+                    echo "Executant només tests de lectura (PRODUCTION)"
+                    sh 'python3 -m pytest test/integration/todoApiTest.py -k "listtodos or gettodo"'
+                } else {
+                    echo "Executant tots els tests (STAGING)"
+                    sh 'python3 -m pytest test/integration/todoApiTest.py'
+                }
+            }
+
     }
 }
 
