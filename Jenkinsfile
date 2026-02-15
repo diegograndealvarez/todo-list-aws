@@ -62,8 +62,12 @@ stage('Build & Deploy') {
             }
         }
 
-        stage('Promote') {
-            steps {
+stage('Promote') {
+    when {
+        branch 'develop'
+    }
+    steps {
+
                 echo "Promoció de develop a master"
 
                 withCredentials([usernamePassword(credentialsId: 'github-credentials', usernameVariable: 'GIT_USER', passwordVariable: 'GIT_PASS')]) {
