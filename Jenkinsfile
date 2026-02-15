@@ -18,14 +18,27 @@ pipeline {
             }
         }
 
-        stage('Build & Deploy Staging') {
-            steps {
-                echo "Build i desplegament a STAGING"
-                sh 'sam build'
-                sh 'sam deploy --config-env staging || true'
+stage('Build & Deploy') {
+    steps {
+        script {
+            def deployEnv = ''
 
+            if (env.BRANCH_NAME == 'develop') {
+                deployEnv = 'staging'
+            } else if (env.BRANCH_NAME == 'master') {
+                deployEnv = 'production'
+            } else {
+                error("Branch no soportada: ${env.BRANCH_NAME}")
             }
+
+            echo "Desplegando entorno: ${deployEnv}"
+
+            sh "sam build"
+            sh "sam deploy --config-env ${deployEnv}"
         }
+    }
+}
+
 
         stage('Rest Test') {
             steps {
