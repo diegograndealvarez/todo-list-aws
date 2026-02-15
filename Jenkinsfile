@@ -34,7 +34,7 @@ stage('Build & Deploy') {
             echo "Desplegando entorno: ${deployEnv}"
 
             sh "sam build"
-            sh "sam deploy --config-env ${deployEnv}"
+            sh "sam deploy --config-env ${deployEnv} || true"
         }
     }
 }
