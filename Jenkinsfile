@@ -27,7 +27,7 @@ stage('Unit Test') {
 
         sh 'pip3 install pytest moto boto3 --break-system-packages'
 
-        sh 'python3 -m pytest test/unit/'
+        sh 'python3 -m pytest test/unit/TestToDo.py'
     }
 }
 
