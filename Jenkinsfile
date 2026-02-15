@@ -18,6 +18,21 @@ pipeline {
             }
         }
 
+stage('Unit Test') {
+    environment {
+        DYNAMODB_TABLE = "todoTable"
+    }
+    steps {
+        echo "Execució de tests unitaris"
+
+        sh 'pip3 install pytest moto boto3 --break-system-packages'
+
+        sh 'python3 -m pytest test/unit/'
+    }
+}
+
+
+
 stage('Build & Deploy') {
     steps {
         script {
