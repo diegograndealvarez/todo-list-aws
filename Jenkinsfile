@@ -40,27 +40,38 @@ stage('Build & Deploy') {
 }
 
 
-        stage('Rest Test') {
-            steps {
-                script {
-                    env.BASE_URL = sh(
-                        script: '''
-                            aws cloudformation describe-stacks \
-                            --stack-name staging-todo-list-aws \
-                            --query 'Stacks[0].Outputs[?OutputKey==`BaseUrlApi`].OutputValue' \
-                            --region us-east-1 \
-                            --output text
-                        ''',
-                        returnStdout: true
-                    ).trim()
-                }
+stage('Rest Test') {
+    steps {
+        script {
+            def stackName = ''
 
-                echo "Base URL: ${env.BASE_URL}"
-
-                sh 'pip3 install pytest --break-system-packages'
-                sh 'python3 -m pytest test/integration/todoApiTest.py'
+            if (env.BRANCH_NAME == 'develop') {
+                stackName = 'staging-todo-list-aws'
+            } else if (env.BRANCH_NAME == 'master') {
+                stackName = 'todo-list-aws-production'
+            } else {
+                error("Branch no soportada: ${env.BRANCH_NAME}")
             }
+
+            env.BASE_URL = sh(
+                script: """
+                    aws cloudformation describe-stacks \
+                    --stack-name ${stackName} \
+                    --query 'Stacks[0].Outputs[?OutputKey==`BaseUrlApi`].OutputValue' \
+                    --region us-east-1 \
+                    --output text
+                """,
+                returnStdout: true
+            ).trim()
         }
+
+        echo "Base URL: ${env.BASE_URL}"
+
+        sh 'pip3 install pytest --break-system-packages'
+        sh 'python3 -m pytest test/integration/todoApiTest.py'
+    }
+}
+
 
 stage('Promote') {
     when {
