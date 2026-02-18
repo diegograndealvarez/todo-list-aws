@@ -1,0 +1,13 @@
+[Unit]
+Description=Jenkins Agent static
+After=network.target
+
+[Service]
+Type=simple
+User=jenkins
+WorkingDirectory=/var/lib/jenkins/agent-static
+ExecStart=/var/lib/jenkins/agent-static/start-agent-static.sh
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

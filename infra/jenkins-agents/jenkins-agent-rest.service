@@ -1,0 +1,13 @@
+[Unit]
+Description=Jenkins Agent rest
+After=network.target
+
+[Service]
+Type=simple
+User=jenkins
+WorkingDirectory=/var/lib/jenkins/agent-rest
+ExecStart=/var/lib/jenkins/agent-rest/start-agent-rest.sh
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
