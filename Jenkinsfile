@@ -1,16 +1,22 @@
 pipeline {
-    agent any
+    agent none
 
     stages {
         stage('Get Code') {
+            agent { label 'agent-ci' }
             steps {
+                sh 'whoami'
+                sh 'hostname'
                 echo "Descàrrega del codi"
                 checkout scm
             }
         }
 
         stage('Static Test') {
+            agent { label 'agent-ci' }
             steps {
+                sh 'whoami'
+                sh 'hostname'
                 echo "Execució de Flake8 i Bandit"
                 sh 'pip3 install flake8 bandit --break-system-packages'
                 sh 'python3 -m flake8 src --output-file=flake8-report.txt || true'
@@ -19,10 +25,15 @@ pipeline {
         }
 
 stage('Unit Test') {
+    agent { label 'agent-ci' }
     environment {
         DYNAMODB_TABLE = "todoTable"
     }
     steps {
+
+        sh 'whoami'
+        sh 'hostname'
+
         echo "Execució de tests unitaris"
 
         sh 'pip3 install pytest moto boto3 --break-system-packages'
@@ -34,7 +45,10 @@ stage('Unit Test') {
 
 
 stage('Build & Deploy') {
+    agent { label 'agent-cd' }
     steps {
+        sh 'whoami'
+        sh 'hostname'
         script {
 
             if (env.BRANCH_NAME == "develop") {
@@ -59,7 +73,10 @@ stage('Build & Deploy') {
 
 
 stage('Rest Test') {
+    agent { label 'agent-cd' }
     steps {
+        sh 'whoami'
+        sh 'hostname'
         script {
             def stackName = ''
 
@@ -102,11 +119,13 @@ stage('Rest Test') {
 
 
 stage('Promote') {
+    agent { label 'agent-ci' }
     when {
         branch 'develop'
     }
     steps {
-
+        sh 'whoami'
+        sh 'hostname'
                 echo "Promoció de develop a master"
 
                 withCredentials([usernamePassword(credentialsId: 'github-credentials', usernameVariable: 'GIT_USER', passwordVariable: 'GIT_PASS')]) {
