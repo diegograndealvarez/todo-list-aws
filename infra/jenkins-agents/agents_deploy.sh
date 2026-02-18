@@ -9,11 +9,6 @@ sudo cp jenkins-agent-ci.service /etc/systemd/system/
 sudo chmod +x /var/lib/jenkins/agent-ci/start-agent-ci.sh
 sudo chown -R jenkins:jenkins /var/lib/jenkins/agent-ci
 
-# Descargar agent.jar
-cd /var/lib/jenkins/agent-ci
-sudo -u jenkins curl -sO http://localhost:8080/jnlpJars/agent.jar
-
-
 # === CD AGENT ===
 sudo mkdir -p /var/lib/jenkins/agent-cd
 sudo cp secret-file-cd /var/lib/jenkins/agent-cd/
@@ -24,7 +19,9 @@ sudo chown -R jenkins:jenkins /var/lib/jenkins/agent-cd
 
 cd /var/lib/jenkins/agent-cd
 sudo -u jenkins curl -sO http://localhost:8080/jnlpJars/agent.jar
-
+# Descargar agent.jar
+cd /var/lib/jenkins/agent-ci
+sudo -u jenkins curl -sO http://localhost:8080/jnlpJars/agent.jar
 
 # === SYSTEMD ===
 sudo chmod 644 /etc/systemd/system/jenkins-agent-*.service

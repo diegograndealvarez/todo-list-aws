@@ -6,7 +6,7 @@ After=network.target
 Type=simple
 User=jenkins
 WorkingDirectory=/var/lib/jenkins/agent-cd
-ExecStart=/var/lib/jenkins/agent-ci/start-agent-cd.sh
+ExecStart=/var/lib/jenkins/agent-cd/start-agent-cd.sh
 Restart=always
 
 [Install]
