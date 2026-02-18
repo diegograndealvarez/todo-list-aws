@@ -1,0 +1,13 @@
+[Unit]
+Description=Jenkins Agent CI
+After=network.target
+
+[Service]
+Type=simple
+User=jenkins
+WorkingDirectory=/var/lib/jenkins/agent-ci
+ExecStart=/var/lib/jenkins/agent-ci/start-agent-ci.sh
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
