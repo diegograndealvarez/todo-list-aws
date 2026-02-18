@@ -1,9 +1,9 @@
 pipeline {
-    agent none
+    agent any
 
     stages {
+
         stage('Get Code') {
-            agent { label 'agent-ci' }
             steps {
                 sh 'whoami'
                 sh 'hostname'
@@ -13,119 +13,107 @@ pipeline {
         }
 
         stage('Static Test') {
-            agent { label 'agent-ci' }
+            agent { label 'agent-static' }
             steps {
                 sh 'whoami'
                 sh 'hostname'
                 echo "Execució de Flake8 i Bandit"
+
                 sh 'pip3 install flake8 bandit --break-system-packages'
                 sh 'python3 -m flake8 src --output-file=flake8-report.txt || true'
                 sh 'python3 -m bandit -r src -f txt -o bandit-report.txt || true'
             }
         }
 
-stage('Unit Test') {
-    agent { label 'agent-ci' }
-    environment {
-        DYNAMODB_TABLE = "todoTable"
-    }
-    steps {
-
-        sh 'whoami'
-        sh 'hostname'
-
-        echo "Execució de tests unitaris"
-
-        sh 'pip3 install pytest moto boto3 --break-system-packages'
-
-        sh 'python3 -m pytest test/unit/TestToDo.py'
-    }
-}
-
-
-
-stage('Build & Deploy') {
-    agent { label 'agent-cd' }
-    steps {
-        sh 'whoami'
-        sh 'hostname'
-        script {
-
-            if (env.BRANCH_NAME == "develop") {
-                echo "Desplegando entorno: STAGING"
-                sh 'sam build'
-                sh 'sam deploy --config-env staging || true'
+        stage('Unit Test') {
+            environment {
+                DYNAMODB_TABLE = "todoTable"
             }
+            steps {
+                sh 'whoami'
+                sh 'hostname'
+                echo "Execució de tests unitaris"
 
-            else if (env.BRANCH_NAME == "master") {
-                echo "Desplegando entorno: PRODUCTION"
-                sh 'sam build'
-                sh 'sam deploy --config-env production || true'
-            }
-
-            else {
-                echo "Branca ${env.BRANCH_NAME} no requiere despliegue"
+                sh 'pip3 install pytest moto boto3 --break-system-packages'
+                sh 'python3 -m pytest test/unit/TestToDo.py'
             }
         }
-    }
-}
 
+        stage('Build & Deploy') {
+            steps {
+                sh 'whoami'
+                sh 'hostname'
 
-
-stage('Rest Test') {
-    agent { label 'agent-cd' }
-    steps {
-        sh 'whoami'
-        sh 'hostname'
-        script {
-            def stackName = ''
-
-            if (env.BRANCH_NAME == 'develop') {
-                stackName = 'staging-todo-list-aws'
-            } else if (env.BRANCH_NAME == 'master') {
-                stackName = 'todo-list-aws-production'
-            } else {
-                error("Branch no soportada: ${env.BRANCH_NAME}")
-            }
-
-            env.BASE_URL = sh(
-                script: """
-                    aws cloudformation describe-stacks \
-                    --stack-name ${stackName} \
-                    --query 'Stacks[0].Outputs[?OutputKey==`BaseUrlApi`].OutputValue' \
-                    --region us-east-1 \
-                    --output text
-                """,
-                returnStdout: true
-            ).trim()
-        }
-
-        echo "Base URL: ${env.BASE_URL}"
-
-        sh 'pip3 install pytest --break-system-packages'
-        
-            script {
-                if (env.BRANCH_NAME == 'master') {
-                    echo "Executant només tests de lectura (PRODUCTION)"
-                    sh 'python3 -m pytest test/integration/todoApiTest.py -k "listtodos or gettodo"'
-                } else {
-                    echo "Executant tots els tests (STAGING)"
-                    sh 'python3 -m pytest test/integration/todoApiTest.py'
+                script {
+                    if (env.BRANCH_NAME == "develop") {
+                        echo "Desplegant entorn STAGING"
+                        sh 'sam build'
+                        sh 'sam deploy --config-env staging || true'
+                    }
+                    else if (env.BRANCH_NAME == "master") {
+                        echo "Desplegant entorn PRODUCTION"
+                        sh 'sam build'
+                        sh 'sam deploy --config-env production || true'
+                    }
+                    else {
+                        echo "Branca ${env.BRANCH_NAME} no requereix desplegament"
+                    }
                 }
             }
+        }
 
-    }
-}
+        stage('Rest Test') {
+            agent { label 'agent-rest' }
+            steps {
+                sh 'whoami'
+                sh 'hostname'
 
+                script {
+                    def stackName = ''
 
-stage('Promote') {
-    agent { label 'agent-ci' }
-    when {
-        branch 'develop'
-    }
-    steps {
-        sh 'whoami'
-        sh 'hostname'
+                    if (env.BRANCH_NAME == 'develop') {
+                        stackName = 'staging-todo-list-aws'
+                    } else if (env.BRANCH_NAME == 'master') {
+                        stackName = 'todo-list-aws-production'
+                    } else {
+                        error("Branch no suportada: ${env.BRANCH_NAME}")
+                    }
+
+                    env.BASE_URL = sh(
+                        script: """
+                            aws cloudformation describe-stacks \
+                            --stack-name ${stackName} \
+                            --query 'Stacks[0].Outputs[?OutputKey==`BaseUrlApi`].OutputValue' \
+                            --region us-east-1 \
+                            --output text
+                        """,
+                        returnStdout: true
+                    ).trim()
+                }
+
+                echo "Base URL: ${env.BASE_URL}"
+
+                sh 'pip3 install pytest --break-system-packages'
+
+                script {
+                    if (env.BRANCH_NAME == 'master') {
+                        echo "Executant només tests de lectura (PRODUCTION)"
+                        sh 'python3 -m pytest test/integration/todoApiTest.py -k "listtodos or gettodo"'
+                    } else {
+                        echo "Executant tots els tests (STAGING)"
+                        sh 'python3 -m pytest test/integration/todoApiTest.py'
+                    }
+                }
+            }
+        }
+
+        stage('Promote') {
+            when {
+                branch 'develop'
+            }
+            steps {
+                sh 'whoami'
+                sh 'hostname'
                 echo "Promoció de develop a master"
 
                 withCredentials([usernamePassword(credentialsId: 'github-credentials', usernameVariable: 'GIT_USER', passwordVariable: 'GIT_PASS')]) {
@@ -145,15 +133,5 @@ stage('Promote') {
                 }
             }
         }
-
-
-
-
-
-
-
-
-
     }
 }
-
