@@ -10,6 +10,18 @@ pipeline {
                 sh 'hostname'
                 echo "Descàrrega del codi"
                 checkout scm
+
+                script {
+                    if (env.BRANCH_NAME == "develop") {
+                        echo "Descarregant samconfig de STAGING"
+                        sh 'curl -L -o samconfig.toml https://raw.githubusercontent.com/diegograndealvarez/todo-list-aws-config/staging/samconfig.toml'
+                    }
+                    else if (env.BRANCH_NAME == "master") {
+                        echo "Descarregant samconfig de PRODUCTION"
+                        sh 'curl -L -o samconfig.toml https://raw.githubusercontent.com/diegograndealvarez/todo-list-aws-config/production/samconfig.toml'
+                    }
+                }
+
             }
         }
 
