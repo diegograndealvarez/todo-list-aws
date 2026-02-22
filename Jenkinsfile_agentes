@@ -16,7 +16,7 @@ pipeline {
                 }
 
             }
-        }
+        
 
         stage('Static Test') {
             agent { label 'agent-static' }
