@@ -13,15 +13,6 @@ pipeline {
                 echo "Descàrrega del codi"
                 checkout scm
 
-                script {
-                    if (env.BRANCH_NAME == "develop") {
-                        echo "Descarregant samconfig de STAGING"
-                        sh 'curl -L -o samconfig.toml https://raw.githubusercontent.com/diegograndealvarez/todo-list-aws-config/staging/samconfig.toml'
-                    }
-                    else if (env.BRANCH_NAME == "master") {
-                        echo "Descarregant samconfig de PRODUCTION"
-                        sh 'curl -L -o samconfig.toml https://raw.githubusercontent.com/diegograndealvarez/todo-list-aws-config/production/samconfig.toml'
-                    }
                 }
 
             }
@@ -64,11 +55,13 @@ pipeline {
                 script {
                     if (env.BRANCH_NAME == "develop") {
                         echo "Desplegant entorn STAGING"
+                        sh 'curl -L -o samconfig.toml https://raw.githubusercontent.com/diegograndealvarez/todo-list-aws-config/staging/samconfig.toml'
                         sh 'sam build'
                         sh 'sam deploy --config-env staging || true'
                     }
                     else if (env.BRANCH_NAME == "master") {
                         echo "Desplegant entorn PRODUCTION"
+                        sh 'curl -L -o samconfig.toml https://raw.githubusercontent.com/diegograndealvarez/todo-list-aws-config/production/samconfig.toml'
                         sh 'sam build'
                         sh 'sam deploy --config-env production || true'
                     }
